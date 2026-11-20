@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import base64
 import datetime as dt
+import hashlib
 import html
 import json
 import os
@@ -27,7 +28,8 @@ import alerts
 from classify import build_applications, classify
 
 SITE = Path(__file__).parent / "site"
-PBKDF2_ITERATIONS = 600_000
+PBKDF2_ITERATIONS = 1_000_000     # more rounds = slower for anyone guessing your passphrase offline
+MIN_PASSPHRASE = 12
 MAX_MESSAGES = 1500
 
 PORTAL_SENDERS = (
@@ -188,13 +190,17 @@ def encrypt(plaintext: bytes, passphrase: str) -> dict:
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
     from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-    salt, iv = os.urandom(16), os.urandom(12)
+    # The salt is fixed for this project (not secret, unique per repository) so a browser can remember a
+    # key between visits. The IV, which must never repeat, is fresh and random for every file.
+    scope = os.environ.get("GITHUB_REPOSITORY", "local").encode()
+    salt = hashlib.sha256(b"job-hunt-salt-v2|" + scope).digest()[:16]
+    iv = os.urandom(12)
     key = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=PBKDF2_ITERATIONS).derive(
         passphrase.encode()
     )
     ct = AESGCM(key).encrypt(iv, plaintext, None)  # ciphertext || 16-byte tag, as WebCrypto expects
     b64 = lambda b: base64.b64encode(b).decode()
-    return {"v": 1, "iter": PBKDF2_ITERATIONS, "salt": b64(salt), "iv": b64(iv), "ct": b64(ct)}
+    return {"v": 2, "iter": PBKDF2_ITERATIONS, "salt": b64(salt), "iv": b64(iv), "ct": b64(ct)}
 
 
 def main() -> None:
@@ -204,8 +210,8 @@ def main() -> None:
     args = ap.parse_args()
 
     passphrase = os.environ.get("DASHBOARD_PASSPHRASE", "")
-    if len(passphrase) < 8:
-        sys.exit("Set DASHBOARD_PASSPHRASE (at least 8 characters; a long phrase is best).")
+    if len(passphrase) < MIN_PASSPHRASE:
+        sys.exit(f"DASHBOARD_PASSPHRASE is too short. Use at least {MIN_PASSPHRASE} characters; four or five random words is best.")
 
     days = int(os.environ.get("LOOKBACK_DAYS", "365"))
     messages = demo_messages() if args.demo else fetch_messages(days)

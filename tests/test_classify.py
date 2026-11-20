@@ -74,7 +74,27 @@ def run():
     if len(apps) != 1 or apps[0]["status"] != "Rejected" or apps[0]["portal"] != "linkedin":
         failures += 1
         print("FAIL  story:", [(a["company"], a["status"], a["portal"]) for a in apps])
-    print(f"{len(CASES) + 1 - failures} of {len(CASES) + 1} checks passed")
+    # Which website did it come from? A job board, a hiring system, or the company's own domain.
+    from classify import detect_portal, detect_site
+    site_cases = [
+        ("LinkedIn <jobs-noreply@linkedin.com>", ("LinkedIn", "board")),
+        ("Acme <no-reply@greenhouse-mail.io>", ("Greenhouse", "ats")),
+        ("Acme <jobs@hire.lever.co>", ("Lever", "ats")),
+        ("Swiggy <swiggy@myworkday.com>", ("Workday", "ats")),
+        ("Acme Recruiting <recruiting@mail.careers.acme.com>", ("acme.com", "direct")),
+        ("Acme <hr@acme.co.uk>", ("acme.co.uk", "direct")),
+        ("A Person <someone@gmail.com>", ("Direct email", "direct")),
+    ]
+    site_failures = 0
+    for sender, want in site_cases:
+        portal, kind = detect_portal(sender)
+        got = detect_site(sender, portal, kind)
+        if got != want:
+            site_failures += 1
+            print(f"FAIL  site for {sender!r}: wanted {want} got {got}")
+    total = len(CASES) + 1 + len(site_cases)
+    failures += site_failures
+    print(f"{total - failures} of {total} checks passed")
     return failures
 
 

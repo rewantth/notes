@@ -18,7 +18,8 @@ The screenshots use made-up applications.
 - **Your activity.** A square for each of the last 14 weeks' days, darker when you sent more applications, plus a streak counter for consecutive days.
 - **Recent replies.** Everything that came back after you applied, newest first, rejections included. Anything that arrived since your last visit is marked "New".
 - **The full list.** Tabs for everything, moving forward, waiting, no reply and rejected. Filter by job site, search by company, and open any row to see its email trail. A link on every row opens the original email in Gmail.
-- **Every application is tagged with the site it came from:** LinkedIn, Naukri, Indeed, Wellfound, Glassdoor, a company's own careers page, and so on. Each site has its own colour.
+- **Every application shows the real website it came from:** a job board such as LinkedIn, Naukri, Indeed, Wellfound or Glassdoor, a hiring system such as Greenhouse, Lever, Workday or Ashby, or the company's own domain, for example `acme.com`. If a job board and a hiring system both wrote about it, the first one is shown and the row lists the others.
+- **The exact time you applied,** not just the day, in your own time zone. It is the time the confirmation email arrived.
 - **Export to a spreadsheet** with one button, and install it on your phone's home screen.
 - **Phone alerts (optional).** A buzz on your phone when a screening call, test, interview, offer or rejection arrives. The alert only says what kind of reply it was, such as "1 interview invite", and never names the company. You tap it to open your dashboard. Interviews and offers, recruiter calls and tests, and rejections arrive at three levels, so on Android you can give each its own sound.
 
@@ -47,6 +48,7 @@ Some more detail:
 - The program runs on GitHub's computers for about two minutes each time. The emails it reads pass through that machine and are not kept. If you are not comfortable with that, do not use this project.
 - Public projects have public logs, so the program prints nothing about your jobs while it runs.
 - Phone alerts are off unless you switch them on. They go through ntfy, a free outside service. It receives a short line such as "1 interview invite" and the time, and never a company name or email text. It does learn that something arrived, so skip alerts if that bothers you. See [Setup, part 8](docs/SETUP.md#part-8-phone-alerts-optional).
+- The page is locked down with a strict browser security policy, so injected code cannot run, and every tool the build uses is pinned to an exact version. The full list of what is and is not protected is in [SECURITY.md](SECURITY.md).
 - **Your passphrase is the only lock.** Pick a long one, such as four or five unrelated words. A short or common one could be guessed by someone who copies the encrypted file and tries many passphrases on their own computer. If you forget it, it cannot be recovered. You can set a new one and run the update again.
 
 ## What you need
@@ -75,7 +77,7 @@ If something goes wrong, look in **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTIN
 
 ## Using the page
 
-Open the address `https://YOUR-GITHUB-NAME.github.io/job-tracker/` and enter your passphrase. Tick "Remember me on this device" if it is your own phone or computer.
+Open the address `https://YOUR-GITHUB-NAME.github.io/REPOSITORY-NAME/` and enter your passphrase. Tick "Keep me unlocked on this device" if it is your own phone or computer. That saves a key which can unlock the page but cannot be read back out. Your passphrase itself is never stored.
 
 **The stages.** Each application has one status, which is the latest news about it:
 
@@ -140,11 +142,14 @@ If a real email is sorted wrongly, the fix is usually one new line in the rules.
 | `site/privacy.html` | The privacy page Google asks for. Edit it so it names you. |
 | `classify.py` | The rules that decide the site, stage, company and role for each email. |
 | `build_data.py` | Fetches the emails, builds the list and encrypts it. |
+| `build_site.py` | Adds the browser security policy to the pages before they are published. |
+| `SECURITY.md` | What is protected, what is not, and what you should do yourself. |
 | `get_token.py` | The one-time Google login helper. |
 | `set-secrets.ps1` | An optional Windows shortcut for storing the secrets in GitHub. |
 | `alerts.py`, `setup-alerts.ps1` | The optional phone alerts, and a Windows shortcut to switch them on. |
 | `.github/workflows/update.yml` | The 10-minute schedule. |
 | `tests/test_classify.py` | Sample emails that check the rules still work. |
+| `tests/test_security.py` | Checks the security claims: the policy, the encryption and the pinned versions. |
 | `docs/` | The guides and the screenshots. |
 
 ## Guides

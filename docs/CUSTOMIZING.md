@@ -21,7 +21,7 @@ This page is for anyone who wants to change how emails are sorted, add a job sit
 
 All the rules are in `classify.py`. Each email goes through these steps in order.
 
-1. **Find the site.** `detect_portal` looks at the sender's address. Known job boards (the `JOB_BOARDS` table) give their own name, such as `linkedin`. Hiring systems like Greenhouse, Lever and Workday, and company addresses, give `company`, which the page shows as "Company website".
+1. **Find the site.** `detect_portal` looks at the sender's address. Known job boards (the `JOB_BOARDS` table) give their own name, such as `linkedin`. Hiring systems like Greenhouse, Lever and Workday, and company addresses, give `company`. `detect_site` then names the real website: the board, the hiring system (the `ATS_NAMES` table), or the company's own domain such as `acme.com`.
 2. **Drop the noise.** Job alerts, "N new jobs for you", profile-view notices, newsletters and similar are discarded. The list is `NOISE_SUBJECT`. A message with "your application" in the subject is kept even if it looks noisy.
 3. **Decide the stage.** `detect_stage` checks the subject first and then the first 1,800 characters of the body. It tries the stages in this order and takes the first that matches: Offer, Rejected, Assessment, Screening, Interview, In review. A subject that is plainly a confirmation, such as "Thank you for applying", is Applied even when the body mentions interviews. Subjects that are only updates, such as "Your application to X at Y", are decided by the body.
 4. **Check it is about a job.** Mail that is not from a job board must mention something job-related (`JOBISH`). That keeps "Your loan application has been received" out.
@@ -88,9 +88,10 @@ From the project folder:
 ```
 python tests/test_classify.py
 python tests/test_alerts.py
+python tests/test_security.py
 ```
 
-The first checks the email rules and the second checks the phone alerts. Each prints how many checks passed and shows any that failed. It runs without Gmail and without any account. If you have `pytest` installed, running `pytest` also works.
+The first checks the email rules, the second the phone alerts and the third the security claims. Each prints how many checks passed and shows any that failed. It runs without Gmail and without any account. If you have `pytest` installed, running `pytest` also works.
 
 ---
 
@@ -118,7 +119,7 @@ The demo emails are in `demo_messages()` in `build_data.py`.
 | How far back to look | `LOOKBACK_DAYS` environment variable, set under `env:` on the build step of the workflow | Default 365 days. |
 | How many emails at most | `MAX_MESSAGES` in `build_data.py` | Default 1,500. |
 | Which emails Gmail returns | `GMAIL_QUERY` in `build_data.py` | A normal Gmail search. Widen it if some replies never reach the rules. |
-| Password strength | `PBKDF2_ITERATIONS` in `build_data.py` | Default 600,000. Higher is slower to unlock and harder to guess. |
+| Password strength | `PBKDF2_ITERATIONS` in `build_data.py` | Default 1,000,000. Higher is slower to unlock and harder to guess. |
 
 ---
 
@@ -129,10 +130,10 @@ The demo emails are in `demo_messages()` in `build_data.py`.
 Locked with a passphrase, it looks like this:
 
 ```json
-{ "v": 1, "iter": 600000, "salt": "…", "iv": "…", "ct": "…" }
+{ "v": 2, "iter": 1000000, "salt": "…", "iv": "…", "ct": "…" }
 ```
 
-The key comes from PBKDF2 with SHA-256 over the passphrase and a random salt. The text is encrypted with AES-256-GCM. The page repeats the same steps with the browser's built-in `crypto.subtle` to unlock it.
+The key comes from PBKDF2 with SHA-256 over the passphrase and a salt that is fixed for the project (so a browser can remember a key between visits; the salt is not secret). Each file also gets a fresh random IV. The text is encrypted with AES-256-GCM. The page repeats the same steps with the browser's built-in `crypto.subtle` to unlock it.
 
 Once unlocked, the contents are:
 
@@ -147,6 +148,9 @@ Once unlocked, the contents are:
       "role": "Security Analyst",
       "portal": "linkedin",
       "portalLabel": "LinkedIn",
+      "site": "LinkedIn",
+      "siteKind": "board",
+      "sites": ["LinkedIn", "acme.com"],
       "status": "Interview",
       "applied": "2026-11-01T10:00:00+00:00",
       "updated": "2026-11-12T09:30:00+00:00",

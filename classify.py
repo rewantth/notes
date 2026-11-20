@@ -66,6 +66,45 @@ def detect_portal(sender: str) -> tuple[str, str]:
     return "company", "direct"
 
 
+# Name shown for each hiring system, matched against the sender's domain.
+ATS_NAMES = [
+    ("greenhouse", "Greenhouse"), ("lever.co", "Lever"), ("myworkday", "Workday"), ("workday.com", "Workday"),
+    ("smartrecruiters", "SmartRecruiters"), ("ashbyhq", "Ashby"), ("icims", "iCIMS"), ("taleo", "Taleo"),
+    ("successfactors", "SuccessFactors"), ("jobvite", "Jobvite"), ("bamboohr", "BambooHR"),
+    ("zohorecruit", "Zoho Recruit"), ("zoho.com", "Zoho Recruit"), ("breezy", "Breezy HR"),
+    ("workable", "Workable"), ("recruitee", "Recruitee"), ("teamtailor", "Teamtailor"),
+    ("pinpointhq", "Pinpoint"), ("oraclecloud", "Oracle Recruiting"), ("eightfold", "Eightfold"),
+    ("phenom", "Phenom"), ("applytojob", "JazzHR"), ("rippling", "Rippling"), ("freshteam", "Freshteam"),
+    ("darwinbox", "Darwinbox"), ("keka", "Keka"), ("turbohire", "TurboHire"), ("hirevue", "HireVue"),
+    ("paradox", "Paradox"), ("avature", "Avature"), ("dayforce", "Dayforce"), ("ultipro", "UKG"),
+]
+
+
+def _registrable(dom: str) -> str:
+    """mail.careers.acme.com -> acme.com (and acme.co.uk -> acme.co.uk)."""
+    parts = dom.split(".")
+    if len(parts) <= 2:
+        return dom
+    if len(parts[-1]) == 2 and parts[-2] in {"co", "com", "org", "net", "ac", "gov", "edu"}:
+        return ".".join(parts[-3:])
+    return ".".join(parts[-2:])
+
+
+def detect_site(sender: str, portal: str, kind: str) -> tuple[str, str]:
+    """The specific website the email came from: ('Greenhouse', 'ats'), ('acme.com', 'direct'), ('LinkedIn', 'board')."""
+    dom = _domain(sender)
+    if kind == "board":
+        return PORTAL_LABELS.get(portal, portal.title()), "board"
+    if kind == "ats":
+        for frag, name in ATS_NAMES:
+            if frag in dom:
+                return name, "ats"
+        return _registrable(dom) or "Career site", "ats"
+    if not dom or dom in GENERIC_DOMAINS:
+        return "Direct email", "direct"
+    return _registrable(dom), "direct"
+
+
 # ----------------------------------------------------------------- noise ---
 NOISE_SUBJECT = re.compile(
     r"job alert|jobs? (?:for you|you may|recommend|picked)|new jobs?|recommended (?:job|for)|"
@@ -363,6 +402,7 @@ def classify(msg: dict) -> dict | None:
         return None
 
     company, role, confident = extract_company_role(sender, subject, body, portal)
+    site, site_kind = detect_site(sender, portal, kind)
     return {
         "id": msg.get("id", ""),
         "thread": msg.get("threadId", ""),
@@ -370,6 +410,8 @@ def classify(msg: dict) -> dict | None:
         "stage": stage,
         "portal": portal,
         "kind": kind,
+        "site": site,
+        "siteKind": site_kind,
         "company": company,
         "role": role,
         "confident": confident,
@@ -419,7 +461,8 @@ def build_applications(events: list[dict]) -> list[dict]:
         if target is None:
             target = {
                 "company": ev["company"], "role": ev["role"], "_rkey": rkey,
-                "portal": ev["portal"], "first_date": ev["date"], "events": [],
+                "portal": ev["portal"], "site": ev["site"], "siteKind": ev["siteKind"],
+                "first_date": ev["date"], "events": [],
                 "threads": set(), "confident": ev["confident"],
             }
             apps.append(target)
@@ -431,7 +474,7 @@ def build_applications(events: list[dict]) -> list[dict]:
         target["confident"] = target["confident"] and ev["confident"]
         # Portal = where the application started: prefer a job board seen on the earliest events.
         if target["portal"] == "company" and ev["portal"] not in ("company", "other") and ev["date"][:10] == target["first_date"][:10]:
-            target["portal"] = ev["portal"]
+            target["portal"], target["site"], target["siteKind"] = ev["portal"], ev["site"], ev["siteKind"]
 
     out = []
     for app in apps:
@@ -450,6 +493,10 @@ def build_applications(events: list[dict]) -> list[dict]:
             "role": app["role"] or "—",
             "portal": app["portal"],
             "portalLabel": PORTAL_LABELS.get(app["portal"], "Other"),
+            "site": app["site"],
+            "siteKind": app["siteKind"],
+            # Every site that wrote about this application, the first one (where it started) first.
+            "sites": [app["site"]] + [s for s in dict.fromkeys(e["site"] for e in evs) if s != app["site"]],
             "status": status,
             "applied": (applied[0] if applied else evs[0])["date"],
             "updated": latest["date"],

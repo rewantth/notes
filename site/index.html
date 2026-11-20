@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#ffd23f">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -114,8 +115,9 @@ h2 { font-size: 28px; margin: 0 0 4px; display: inline-block; background: linear
 
 /* diary */
 .diary { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-.diary li { display: grid; grid-template-columns: 62px 1fr auto; gap: 12px; align-items: center; padding: 10px 14px; background: var(--card); border: 2px solid var(--line); border-radius: 12px; }
+.diary li { display: grid; grid-template-columns: 76px 1fr auto; gap: 12px; align-items: center; padding: 10px 14px; background: var(--card); border: 2px solid var(--line); border-radius: 12px; }
 .diary .d { font-weight: 800; }
+.diary .d small { display: block; font-weight: 400; font-size: 12.5px; color: var(--ink-2); }
 .diary .t b { font-size: 17px; }
 .diary .t .ro { color: var(--ink-2); font-size: 14px; }
 .diary .sub { display: block; color: var(--ink-2); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -141,6 +143,7 @@ h2 { font-size: 28px; margin: 0 0 4px; display: inline-block; background: linear
 .row-main:hover { background: color-mix(in srgb, var(--y) 22%, var(--card)); }
 .row .co { font-weight: 800; font-size: 17px; line-height: 1.25; }
 .row .ro { color: var(--ink-2); font-size: 14px; display: block; }
+.row .when { display: block; color: var(--ink-2); font-size: 12.5px; margin-top: 1px; }
 .guess { background: var(--y); color: var(--on); border: 1.5px solid var(--line); border-radius: 50%; display: inline-block; width: 17px; height: 17px; text-align: center; line-height: 14px; font-size: 12px; margin-left: 6px; cursor: help; font-weight: 800; }
 .where { display: inline-flex; align-items: center; gap: 8px; font-size: 14.5px; font-weight: 600; }
 .stand .says { display: block; color: var(--ink-2); font-size: 13.5px; margin-top: 2px; }
@@ -148,7 +151,8 @@ h2 { font-size: 28px; margin: 0 0 4px; display: inline-block; background: linear
 .sm-only { display: none; margin-top: 4px; }
 .detail { border-top: 2px dashed var(--line); padding: 10px 14px 14px; background: var(--bg); }
 .detail ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.detail li { display: grid; grid-template-columns: 66px 110px 1fr; gap: 10px; align-items: center; font-size: 14px; }
+.detail .via { margin: 0 0 8px; font-size: 14px; }
+.detail li { display: grid; grid-template-columns: 148px 110px 1fr; gap: 10px; align-items: center; font-size: 14px; }
 .detail .sj { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .detail .go { margin: 10px 0 0; font-weight: 700; }
 .empty { padding: 26px; color: var(--ink-2); border: 2px dashed var(--line); border-radius: 12px; }
@@ -178,7 +182,7 @@ details.about[open] summary::before { content: "– "; }
   .sm-only { display: block; }
   .diary li { grid-template-columns: 1fr auto; }
   .diary .d { grid-column: 1 / -1; }
-  .detail li { grid-template-columns: 60px 1fr; } .detail .sj { grid-column: 1 / -1; white-space: normal; }
+  .detail li { grid-template-columns: 1fr auto; } .detail .sj { grid-column: 1 / -1; white-space: normal; }
   .search { margin-left: 0; width: 100%; }
   .f-row { flex-wrap: wrap; }
   .f-row .tx { flex-basis: 100%; order: 3; }
@@ -193,7 +197,7 @@ details.about[open] summary::before { content: "– "; }
     <h1 class="big">Notes.</h1>
     <p style="color:var(--on)">Private page. Type your passphrase to get in.</p>
     <input id="pass" type="password" aria-label="Passphrase" autocomplete="current-password" required autofocus>
-    <label class="remember" style="color:var(--on)"><input id="remember" type="checkbox"> Remember me on this device</label>
+    <label class="remember" style="color:var(--on)"><input id="remember" type="checkbox"> <span>Keep me unlocked on this device<br><small>Saves a key that can't be read back, never your passphrase.</small></span></label>
     <button class="btn" type="submit" id="unlockBtn">Let me in</button>
     <div class="err" id="lockErr" role="alert"></div>
   </form>
@@ -272,6 +276,7 @@ details.about[open] summary::before { content: "– "; }
         <p>This page fills itself in. About every 10 minutes a small program reads your job-related emails in Gmail (read-only), works out which site each application came from and what the latest news is, and refreshes the page.</p>
         <p>It reads patterns in the sender and the wording, so now and then it misreads an email. A <span class="guess" style="margin:0">?</span> after a company means the name was a guess. The Gmail link always opens the original.</p>
         <p>Your list is locked with your passphrase and unlocked here, in your browser. It never sits anywhere in plain text.</p>
+        <p>Times are when each email arrived, shown in this device's time zone. "Applied through" is the website the email came from: a job board such as LinkedIn, a hiring system such as Greenhouse or Workday, or the company's own address.</p>
         <p><b>Shortcuts:</b> <kbd>Ctrl</kbd> + <kbd>K</kbd> or <kbd>/</kbd> opens the search box.</p>
       </div>
       <div>
@@ -285,6 +290,8 @@ details.about[open] summary::before { content: "– "; }
 <script>
 "use strict";
 const $ = (id) => document.getElementById(id);
+// Refuse to run inside someone else's page (a basic clickjacking guard; headers cannot be set on GitHub Pages).
+if (window.top !== window.self) { document.documentElement.textContent = ""; throw new Error("framed"); }
 
 /* ---------- vocabulary ---------- */
 const PORTALS = {
@@ -316,23 +323,46 @@ const HEARD = ["Screening", "Assessment", "Interview", "Offer", "Rejected"];
 const FORWARD = ["Screening", "Assessment", "Interview", "Offer"];
 const GHOST_DAYS = 21;
 
-let DATA = null, PASS = null, timer = null, SEEN = 0;
+let DATA = null, PASS = null, KEY = null, KEYSALT = null, timer = null, SEEN = 0;
 const state = { tab: "all", portal: "all", q: "", open: new Set(), moreNews: false };
 
 /* ---------- crypto ---------- */
 const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
-async function decryptData(passphrase) {
-  const res = await fetch("data.enc.json?t=" + Date.now(), { cache: "no-store" });
+async function fetchBox() {
+  const res = await fetch("data.enc.json?t=" + Date.now(), { cache: "no-store", credentials: "omit", referrerPolicy: "no-referrer" });
   if (!res.ok) throw new Error("The data file is not there yet. It appears after the first update.");
   const box = await res.json();
+  const ok = box && ["salt", "iv", "ct"].every((k) => typeof box[k] === "string") && Number.isInteger(box.iter) && box.iter >= 100000 && box.iter <= 20000000;
+  if (!ok) throw new Error("The data file looks damaged.");
+  return box;
+}
+async function deriveKey(passphrase, box) {
   const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(passphrase), "PBKDF2", false, ["deriveKey"]);
-  const key = await crypto.subtle.deriveKey(
-    { name: "PBKDF2", salt: b64(box.salt), iterations: box.iter, hash: "SHA-256" },
-    base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+  // extractable: false, so the key can be used to unlock the data but never read back out, even by this page's own code.
+  return crypto.subtle.deriveKey({ name: "PBKDF2", salt: b64(box.salt), iterations: box.iter, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+}
+async function decryptWith(key, box) {
   try {
     const buf = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(box.iv) }, key, b64(box.ct));
     return JSON.parse(new TextDecoder().decode(buf));
   } catch { throw new Error("WRONG"); }
+}
+/* "Remember me" keeps only the non-extractable key in this browser's IndexedDB. The passphrase itself is never stored. */
+const keyStore = {
+  open: () => new Promise((res, rej) => { const r = indexedDB.open("jt-keys", 1); r.onupgradeneeded = () => r.result.createObjectStore("k"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }),
+  async get() { try { const db = await this.open(); return await new Promise((res) => { const q = db.transaction("k").objectStore("k").get("main"); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); }); } catch { return null; } },
+  async put(v) { try { const db = await this.open(); await new Promise((res, rej) => { const t = db.transaction("k", "readwrite"); t.objectStore("k").put(v, "main"); t.oncomplete = res; t.onerror = () => rej(t.error); }); return true; } catch { return false; } },
+  async clear() { try { const db = await this.open(); await new Promise((res) => { const t = db.transaction("k", "readwrite"); t.objectStore("k").clear(); t.oncomplete = res; t.onerror = res; }); } catch {} },
+};
+// Download again and unlock with whatever this page already holds in memory.
+async function refreshData() {
+  const box = await fetchBox();
+  let key = KEY && KEYSALT === box.salt ? KEY : null;
+  if (!key && PASS) key = await deriveKey(PASS, box);
+  if (!key) throw new Error("LOCKED");
+  const data = await decryptWith(key, box);
+  KEY = key; KEYSALT = box.salt;
+  return data;
 }
 
 /* ---------- helpers ---------- */
@@ -342,6 +372,14 @@ const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 const startOfDay = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
 const shortDate = (iso) => iso ? new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short" }) : "";
 const daysBetween = (a, b) => Math.round((startOfDay(b) - startOfDay(a)) / 864e5);
+// Times are shown in this device's time zone. They come from the Date header of each email.
+const fmtDateTime = (iso) => iso ? new Date(iso).toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }) : "";
+const timeOf = (iso) => new Date(iso).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+function whenText(iso) { const d = daysBetween(iso, new Date()), t = timeOf(iso); return d <= 0 ? `today, ${t}` : d === 1 ? `yesterday, ${t}` : `${shortDate(iso)}, ${t}`; }
+// The real website an application came from: a job board, a hiring system, or the company's own domain.
+const siteOf = (a) => a.site || portalOf(a.portal).label;
+const groupOf = (a) => (a.siteKind === "direct" ? "Company's own site" : siteOf(a));
+const colorOf = (a) => (a.siteKind === "ats" || a.siteKind === "direct" ? "--p-company" : portalOf(a.portal).v);
 function ago(iso) {
   const days = daysBetween(iso, new Date());
   if (days <= 0) return "today";
@@ -434,7 +472,7 @@ function render() {
 function renderFocus(waiting, ghosts) {
   const rows = waiting.map((a) => {
     const link = safeLink(a.link), s = stageOf(a.status);
-    return `<div class="f-row" style="background:${s.c}"><span class="co">${co(a)}</span><span class="tx">${esc(FOCUS_TEXT[a.status])}${isNew(a.updated) ? `<span class="new">NEW</span>` : ""}<span class="sub" style="display:block">${esc(a.role)} · ${esc(ago(a.updated))} · from ${esc(portalOf(a.portal).label)}</span></span>${link ? `<a class="go" href="${esc(link)}" target="_blank" rel="noopener noreferrer">Open</a>` : ""}</div>`;
+    return `<div class="f-row" style="background:${s.c}"><span class="co">${co(a)}</span><span class="tx">${esc(FOCUS_TEXT[a.status])}${isNew(a.updated) ? `<span class="new">NEW</span>` : ""}<span class="sub" style="display:block">${esc(a.role)} · ${esc(whenText(a.updated))} · applied via ${esc(siteOf(a))}</span></span>${link ? `<a class="go" href="${esc(link)}" target="_blank" rel="noopener noreferrer">Open</a>` : ""}</div>`;
   });
   if (ghosts.length) rows.push(`<div class="f-row" style="background:#ffb36b"><span class="co">Nudge time</span><span class="tx">${plural(ghosts.length, "application has", "applications have")} had no reply for ${GHOST_DAYS}+ days<span class="sub" style="display:block">A short, polite follow-up email often gets a response.</span></span><a class="go" href="#everything" id="seeGhosts">See them</a></div>`);
   $("focus").innerHTML = rows.length ? rows.join("") : `<div class="quiet"><b>Nothing needs a reply right now.</b>When an employer asks for a call, a test or an interview, it shows up here, usually within 10 to 15 minutes of the email arriving.</div>`;
@@ -456,10 +494,10 @@ function renderFunnel(apps) {
 
 function renderSites(apps) {
   const by = {};
-  for (const a of apps) { const p = (by[a.portal] ||= { n: 0, heard: 0 }); p.n++; if (reached(a, HEARD)) p.heard++; }
+  for (const a of apps) { const p = (by[groupOf(a)] ||= { n: 0, heard: 0, v: colorOf(a) }); p.n++; if (reached(a, HEARD)) p.heard++; }
   const ids = Object.keys(by).sort((x, y) => by[y].heard / by[y].n - by[x].heard / by[x].n || by[y].n - by[x].n);
   $("siteCap").textContent = apps.length < 30 ? "Share of applications that got any reply. Numbers are small so far, so treat it as a hint." : "Share of applications that got any reply, from your own history.";
-  $("sites").innerHTML = ids.map((p) => { const r = Math.round((by[p].heard / by[p].n) * 100); return `<div class="bar-row"><div class="top2"><span>${esc(portalOf(p).label)}</span><span>${r}% · ${by[p].heard} of ${by[p].n}</span></div><div class="track"><i style="--c:var(${portalOf(p).v});width:${r}%"></i></div></div>`; }).join("") || `<div class="muted">Nothing yet.</div>`;
+  $("sites").innerHTML = ids.map((p) => { const r = Math.round((by[p].heard / by[p].n) * 100); return `<div class="bar-row"><div class="top2"><span>${esc(p)}</span><span>${r}% · ${by[p].heard} of ${by[p].n}</span></div><div class="track"><i style="--c:var(${by[p].v});width:${r}%"></i></div></div>`; }).join("") || `<div class="muted">Nothing yet.</div>`;
 }
 
 function renderHeat(counts) {
@@ -481,7 +519,7 @@ function renderDiary(apps) {
   for (const a of apps) for (const e of a.history || []) if (e.stage !== "Applied") items.push({ a, e });
   items.sort((x, y) => (x.e.date < y.e.date ? 1 : -1));
   if (!items.length) { $("diary").innerHTML = `<li style="display:block"><div class="quiet" style="border:0;padding:0">No replies yet. Confirmations don't count. Replies, calls and rejections do.</div></li>`; $("moreNews").classList.add("hidden"); return; }
-  $("diary").innerHTML = items.slice(0, state.moreNews ? 30 : 8).map(({ a, e }) => `<li><span class="d">${esc(shortDate(e.date))}</span><span class="t"><b>${co(a)}</b>${a.role && a.role !== "—" ? ` <span class="ro">· ${esc(a.role)}</span>` : ""}${isNew(e.date) ? `<span class="new">NEW</span>` : ""}<span class="sub">${esc(e.subject)}</span></span>${pill(e.stage)}</li>`).join("");
+  $("diary").innerHTML = items.slice(0, state.moreNews ? 30 : 8).map(({ a, e }) => `<li><span class="d">${esc(shortDate(e.date))}<small>${esc(timeOf(e.date))}</small></span><span class="t"><b>${co(a)}</b>${a.role && a.role !== "—" ? ` <span class="ro">· ${esc(a.role)}</span>` : ""}${isNew(e.date) ? `<span class="new">NEW</span>` : ""}<span class="sub">${esc(e.subject)}</span></span>${pill(e.stage)}</li>`).join("");
   const more = $("moreNews");
   more.classList.toggle("hidden", items.length <= 8);
   more.textContent = state.moreNews ? "Show fewer" : "Show older replies";
@@ -497,28 +535,30 @@ const TABS = [
 function renderTabs(apps) {
   $("tabs").id = "tabs";
   $("tabs").innerHTML = TABS.map(([id, label, fn]) => `<button type="button" class="tab" data-t="${id}" aria-pressed="${state.tab === id}">${label}<span class="n">${apps.filter(fn).length}</span></button>`).join("");
-  const cnt = apps.reduce((m, a) => ((m[a.portal] = (m[a.portal] || 0) + 1), m), {});
+  const cnt = {}, col = {};
+  for (const a of apps) { const g = groupOf(a); cnt[g] = (cnt[g] || 0) + 1; col[g] = colorOf(a); }
   const ids = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]);
   const chip = (id, label, v, n) => `<button type="button" class="chip" data-p="${esc(id)}" aria-pressed="${state.portal === id}">${v ? `<i class="sq" style="--c:var(${v})"></i>` : ""}${esc(label)} ${n}</button>`;
-  $("portalChips").innerHTML = chip("all", "Any site", null, apps.length) + ids.map((p) => chip(p, portalOf(p).label, portalOf(p).v, cnt[p])).join("");
+  $("portalChips").innerHTML = chip("all", "Any site", null, apps.length) + ids.map((g) => chip(g, g, col[g], cnt[g])).join("");
 }
 
 function renderRows() {
   const q = state.q.trim().toLowerCase();
   const tabFn = TABS.find((t) => t[0] === state.tab)[2];
-  const list = DATA.applications.filter((a) => tabFn(a) && (state.portal === "all" || a.portal === state.portal) && (!q || `${a.company} ${a.role}`.toLowerCase().includes(q)))
+  const list = DATA.applications.filter((a) => tabFn(a) && (state.portal === "all" || groupOf(a) === state.portal) && (!q || `${a.company} ${a.role}`.toLowerCase().includes(q)))
     .sort((a, b) => (a.updated < b.updated ? 1 : -1));
   if (!list.length) { $("rows").innerHTML = `<li class="empty">Nothing here.</li>`; $("countNote").textContent = ""; return; }
   $("rows").innerHTML = list.map((a) => {
-    const key = a.company + "|" + a.role + "|" + a.applied, open = state.open.has(key), s = stageOf(a.status), p = portalOf(a.portal), link = safeLink(a.link);
+    const key = a.company + "|" + a.role + "|" + a.applied, open = state.open.has(key), s = stageOf(a.status), site = siteOf(a), v = colorOf(a), link = safeLink(a.link);
+    const via = (a.sites && a.sites.length ? a.sites : [site]).join(" → ");
     const main = `<li class="row"><button class="row-main" type="button" data-k="${esc(key)}" aria-expanded="${open}">
-      <span><span class="co">${co(a)}</span><span class="ro">${esc(a.role)}</span><span class="sm-only where"><i class="sq" style="--c:var(${p.v})"></i>${esc(p.label)}</span></span>
-      <span class="where-c"><span class="where"><i class="sq" style="--c:var(${p.v})"></i>${esc(p.label)}</span></span>
+      <span><span class="co">${co(a)}</span><span class="ro">${esc(a.role)}</span><span class="when">Applied ${esc(fmtDateTime(a.applied))}</span><span class="sm-only where"><i class="sq" style="--c:var(${v})"></i>${esc(site)}</span></span>
+      <span class="where-c"><span class="where" title="${esc(via)}"><i class="sq" style="--c:var(${v})"></i>${esc(site)}</span></span>
       <span class="stand">${pill(a.status)}<span class="says">${esc(s.says)}</span></span>
-      <span class="last">${esc(ago(a.updated))}</span></button>`;
+      <span class="last" title="${esc(fmtDateTime(a.updated))}">${esc(ago(a.updated))}</span></button>`;
     if (!open) return main + `</li>`;
-    const hist = (a.history || []).map((e) => `<li><span style="color:var(--ink-2)">${esc(shortDate(e.date))}</span>${pill(e.stage)}<span class="sj">${esc(e.subject)}</span></li>`).join("");
-    return main + `<div class="detail"><ol>${hist}</ol>${link ? `<p class="go"><a href="${esc(link)}" target="_blank" rel="noopener noreferrer">Open the latest email in Gmail →</a></p>` : ""}</div></li>`;
+    const hist = (a.history || []).map((e) => `<li><span style="color:var(--ink-2)">${esc(fmtDateTime(e.date))}</span>${pill(e.stage)}<span class="sj">${esc(e.subject)}</span></li>`).join("");
+    return main + `<div class="detail"><p class="via">Applied through <b>${esc(site)}</b>${a.sites && a.sites.length > 1 ? `. Emails also came from ${esc(a.sites.slice(1).join(", "))}` : ""}.</p><ol>${hist}</ol>${link ? `<p class="go"><a href="${esc(link)}" target="_blank" rel="noopener noreferrer">Open the latest email in Gmail →</a></p>` : ""}</div></li>`;
   }).join("");
   $("countNote").textContent = list.length === DATA.applications.length ? `${plural(list.length, "application", "applications")} in all.` : `Showing ${list.length} of ${DATA.applications.length}.`;
 }
@@ -526,8 +566,9 @@ function renderRows() {
 /* ---------- export ---------- */
 function exportCsv() {
   const cell = (v) => { let s = String(v ?? ""); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return `"${s.replace(/"/g, '""')}"`; };
-  const head = ["Company", "Role", "Site", "Status", "Applied", "Last update", "Emails", "Gmail link"];
-  const lines = [head.map(cell).join(",")].concat(DATA.applications.map((a) => [a.company, a.role, a.portalLabel, a.status, a.applied.slice(0, 10), a.updated.slice(0, 10), a.emails, a.link].map(cell).join(",")));
+  const head = ["Company", "Role", "Website", "Status", "Applied (local time)", "Applied (UTC)", "Last update (local time)", "Emails", "Gmail link"];
+  const local = (iso) => new Date(iso).toLocaleString();
+  const lines = [head.map(cell).join(",")].concat(DATA.applications.map((a) => [a.company, a.role, siteOf(a), a.status, local(a.applied), a.applied, local(a.updated), a.emails, a.link].map(cell).join(",")));
   const url = URL.createObjectURL(new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" }));
   const a = document.createElement("a"); a.href = url; a.download = "job-applications.csv"; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -546,35 +587,54 @@ document.addEventListener("keydown", (e) => {
   if (((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") || (e.key === "/" && !typing)) { e.preventDefault(); $("q").focus(); $("q").scrollIntoView({ behavior: "smooth", block: "center" }); }
 });
 
-async function load(passphrase) {
-  DATA = await decryptData(passphrase); PASS = passphrase; render();
+function showData(data) {
+  DATA = data; render();
   $("lock").classList.add("hidden"); $("app").classList.remove("hidden");
   clearInterval(timer);
-  timer = setInterval(() => load(PASS).catch(() => {}), 5 * 60 * 1000);
+  timer = setInterval(() => refreshData().then((d) => { DATA = d; render(); }).catch(() => {}), 5 * 60 * 1000);
+}
+async function unlockWith(passphrase, remember) {
+  const box = await fetchBox();
+  const key = await deriveKey(passphrase, box);
+  const data = await decryptWith(key, box);             // throws "WRONG" for a wrong passphrase
+  PASS = passphrase; KEY = key; KEYSALT = box.salt;
+  if (remember) await keyStore.put({ salt: box.salt, key }); else await keyStore.clear();
+  showData(data);
 }
 $("lockForm").addEventListener("submit", async (e) => {
   e.preventDefault(); $("lockErr").textContent = ""; $("unlockBtn").disabled = true; $("unlockBtn").textContent = "Opening…";
-  const p = $("pass").value;
   try {
-    await load(p);
-    try { $("remember").checked ? localStorage.setItem("jt-pass", p) : localStorage.removeItem("jt-pass"); } catch {}
+    await unlockWith($("pass").value, $("remember").checked);
+    $("pass").value = "";
   } catch (err) {
     $("lockErr").textContent = err.message === "WRONG" ? "That isn't the right passphrase." : err.message;
   } finally { $("unlockBtn").disabled = false; $("unlockBtn").textContent = "Let me in"; }
 });
-$("refresh").addEventListener("click", async () => { $("refresh").textContent = "Refreshing…"; try { await load(PASS); } catch {} $("refresh").textContent = "Refresh"; });
-$("lockBtn").addEventListener("click", () => {
-  try { localStorage.removeItem("jt-pass"); } catch {}
-  clearInterval(timer); DATA = PASS = null; $("pass").value = "";
+$("refresh").addEventListener("click", async () => { $("refresh").textContent = "Refreshing…"; try { DATA = await refreshData(); render(); } catch {} $("refresh").textContent = "Refresh"; });
+$("lockBtn").addEventListener("click", async () => {
+  await keyStore.clear();
+  clearInterval(timer); DATA = PASS = KEY = KEYSALT = null; $("pass").value = "";
   $("app").classList.add("hidden"); $("lock").classList.remove("hidden"); $("pass").focus();
 });
 try { SEEN = Number(localStorage.getItem("jt-seen") || 0); } catch {}
 addEventListener("pagehide", () => { try { localStorage.setItem("jt-seen", String(Date.now())); } catch {} });
 setInterval(() => { if (DATA) $("updated").textContent = `Inbox last checked ${minutesAgo(DATA.generated)}. It looks again about every 10 minutes.`; }, 60000);
 
+// On start: an earlier version stored the passphrase itself in this browser. Swap that for a key and delete it.
 (async () => {
-  let saved = null; try { saved = localStorage.getItem("jt-pass"); } catch {}
-  if (saved) { try { await load(saved); return; } catch { try { localStorage.removeItem("jt-pass"); } catch {} } }
+  let old = null; try { old = localStorage.getItem("jt-pass"); localStorage.removeItem("jt-pass"); } catch {}
+  if (old) { try { await unlockWith(old, true); return; } catch { /* fall through to the key store */ } }
+  const saved = await keyStore.get();
+  if (!saved) return;
+  try {
+    const box = await fetchBox();
+    if (saved.salt !== box.salt) { await keyStore.clear(); return; }   // data was re-keyed: ask for the passphrase again
+    const data = await decryptWith(saved.key, box);
+    KEY = saved.key; KEYSALT = saved.salt;
+    showData(data);
+  } catch (err) {
+    if (err.message === "WRONG") await keyStore.clear();                // key no longer fits (passphrase changed)
+  }
 })();
 </script>
 </body>
