@@ -1,0 +1,5 @@
+credentials.json
+token.json
+__pycache__/
+site/data.enc.json
+github-secrets.txt
